@@ -1,31 +1,35 @@
 from bs4 import BeautifulSoup
-from requests import *
-import numpy.random as rand
+from requests import get
+from numpy.random import choice
 import sys
+from playsound import playsound
 
 def main():
     # start
-    search = "piss"
-    link = f"https://www.igi-global.com/dictionary/a-foucauldian-perspective-on-using-the-transparency-framework-in-learning-and-teaching-tilt/110853"
-    soup = BeautifulSoup(get(link).text, 'html.parser')
-    text = soup.get_text().lower().strip()
-    counter = 0
-    while(text.find(search) == -1 and counter < 500):
-        lines = [x.get('href') for x in soup.find_all('a')]
-        random = rand.choice(lines)
+    search_item: str = input("Word to search for:\n").lower()
+    link = input("Link to start at:\n")
+    soup: BeautifulSoup = BeautifulSoup(get(link).text, 'html.parser') # mostly irrelevant data, but this is the entire website's content
+    text: str = soup.get_text().lower().strip()
+    counter: int = 0
+    while(text.find(search_item) == -1):
+
         try:
-            link = "https://en.wikipedia.org/" + random
+            link = "https://en.wikipedia.org/" + choice([x.get('href') for x in soup.find_all('a')])
         except TypeError:
-            raise Exception("Idiot")
-        start = get(link).text
+            playsound("fail-buzzer-01.wav")
+            sys.stdout.write("Could not read. Input new link:\n")
+            link = input()
+            sys.stdout.flush()
+
         soup = BeautifulSoup(get(link).text, 'html.parser')
         text = soup.get_text().lower().strip()
         counter += 1
-        sys.stdout.write(str(counter) + ", ")
+        sys.stdout.write(str("Trying {}\n".format(link)))
         sys.stdout.flush()
         # print(link)
     else:
-        print("Found {} at {} in {} tries.".format(search, link, counter))
+        playsound("ding-36029.mp3")
+        print("Found {} at {} in {} tries.".format(search_item, link, counter))
 
 if __name__ == "__main__":
     main()
